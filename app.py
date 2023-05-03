@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm
+from forms import UserAddForm, UserEditForm, LoginForm, MessageForm, CSRFProtectForm
 from models import db, connect_db, User, Message
 
 load_dotenv()
@@ -146,6 +146,8 @@ def list_users():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    form = g.csrf_form
+
     search = request.args.get('q')
 
     if not search:
@@ -153,7 +155,7 @@ def list_users():
     else:
         users = User.query.filter(User.username.like(f"%{search}%")).all()
 
-    return render_template('users/index.html', users=users)
+    return render_template('users/index.html', users=users, form=form)
 
 
 @app.get('/users/<int:user_id>')
@@ -178,8 +180,9 @@ def show_following(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    form = g.csrf_form
     user = User.query.get_or_404(user_id)
-    return render_template('users/following.html', user=user)
+    return render_template('users/following.html', user=user, form=form)
 
 
 @app.get('/users/<int:user_id>/followers')
@@ -190,8 +193,9 @@ def show_followers(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    form = g.csrf_form
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user)
+    return render_template('users/followers.html', user=user, form=form)
 
 
 @app.post('/users/follow/<int:follow_id>')
@@ -235,6 +239,28 @@ def profile():
     """Update profile for current user."""
 
     # IMPLEMENT THIS
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    form = UserEditForm(obj=g.user)
+
+    # check if password is valid
+    if form.validate_on_submit() and User.authenticate(
+        g.user.username, form.password.data,):
+
+        # process form, update db
+        g.user.username = form.username.data or g.user.username
+        g.user.email = form.email.data or g.user.email
+        g.user.image_url = form.image_url.data or User.image_url.default.arg
+        g.user.header_image_url = form.header_image_url.data or User.header_image_url.default.arg
+        g.user.bio = form.bio.data or g.user.bio
+
+        db.session.commit()
+
+        return redirect(f"/users/{g.user.id}")
+
+    return render_template("users/edit.html", form=form)
 
 
 @app.post('/users/delete')
