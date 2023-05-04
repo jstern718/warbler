@@ -31,13 +31,14 @@ connect_db(app)
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
 
-
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
         g.csrf_form = CSRFProtectForm()
 
     else:
         g.user = None
+
+# TODO: before request set csrf form
 
 
 def do_login(user):
@@ -51,7 +52,6 @@ def do_logout():
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
-        del g.csrf_form
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -120,8 +120,7 @@ def logout():
 
     form = g.csrf_form
 
-    # IMPLEMENT THIS AND FIX BUG
-    if CURR_USER_KEY not in session or session[CURR_USER_KEY] != g.user.id:
+    if not g.user:
         return redirect("/")
 
     if form.validate_on_submit():
@@ -129,7 +128,6 @@ def logout():
 
     flash("Logout successful.", "success")
     return redirect("/")
-    # DO NOT CHANGE METHOD ON ROUTE
 
 
 ##############################################################################
@@ -205,7 +203,9 @@ def start_following(follow_id):
     Redirect to following page for the current for the current user.
     """
 
-    if not g.user:
+    form = g.csrf_form
+    # TODO: copy this pattern elsewhere
+    if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
@@ -227,18 +227,20 @@ def stop_following(follow_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get_or_404(follow_id)
-    g.user.following.remove(followed_user)
-    db.session.commit()
+    form = g.csrf_form
+    # TODO: use start_following pattern
+    if form.validate_on_submit():
+        followed_user = User.query.get_or_404(follow_id)
+        g.user.following.remove(followed_user)
+        db.session.commit()
 
     return redirect(f"/users/{g.user.id}/following")
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+def edit_profile():
     """Update profile for current user."""
 
-    # IMPLEMENT THIS
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -246,19 +248,19 @@ def profile():
     form = UserEditForm(obj=g.user)
 
     # check if password is valid
-    if form.validate_on_submit() and User.authenticate(
-        g.user.username, form.password.data,):
+    if form.validate_on_submit():
+        if User.authenticate(g.user.username, form.password.data,):
+            # process form, update db
+            g.user.username = form.username.data
+            g.user.email = form.email.data
+            g.user.image_url = form.image_url.data or User.image_url.default.arg
+            g.user.header_image_url = form.header_image_url.data or User.header_image_url.default.arg
+            g.user.bio = form.bio.data
 
-        # process form, update db
-        g.user.username = form.username.data or g.user.username
-        g.user.email = form.email.data or g.user.email
-        g.user.image_url = form.image_url.data or User.image_url.default.arg
-        g.user.header_image_url = form.header_image_url.data or User.header_image_url.default.arg
-        g.user.bio = form.bio.data or g.user.bio
+            db.session.commit()
+            return redirect(f"/users/{g.user.id}")
 
-        db.session.commit()
-
-        return redirect(f"/users/{g.user.id}")
+        flash("Invalid password.")
 
     return render_template("users/edit.html", form=form)
 
@@ -274,11 +276,15 @@ def delete_user():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    do_logout()
+    form = g.csrf_form
+    # TODO: use start_following pattern
+    if form.validate_on_submit():
+        do_logout()
+        Message.query.filter_by(user_id=g.user.id).delete()
+        db.session.delete(g.user)
+        db.session.commit()
 
-    db.session.delete(g.user)
-    db.session.commit()
-
+    # TODO: flash success
     return redirect("/signup")
 
 
@@ -316,8 +322,10 @@ def show_message(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    form = g.csrf_form
+
     msg = Message.query.get_or_404(message_id)
-    return render_template('messages/show.html', message=msg)
+    return render_template('messages/show.html', message=msg, form=form)
 
 
 @app.post('/messages/<int:message_id>/delete')
@@ -333,9 +341,10 @@ def delete_message(message_id):
         return redirect("/")
 
     form = g.csrf_form
-
+    # TODO: use start_following pattern
     if form.validate_on_submit():
         msg = Message.query.get_or_404(message_id)
+        # TODO: check msg user author is g.user
         db.session.delete(msg)
         db.session.commit()
 
@@ -377,3 +386,12 @@ def add_header(response):
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
     response.cache_control.no_store = True
     return response
+
+
+# TODO:
+# map icon show/hide
+# password invalid message
+# facotory boy library
+# tip message: follow someone to see their emssages on timeline
+# Add CSRF tags {{form.hidden_tag()}}
+    # switch over to {{ g.csrf_form.hidden_tag() }}
