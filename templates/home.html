@@ -46,6 +46,11 @@
 
     <div class="col-lg-6 col-md-8 col-sm-12">
       <ul class="list-group" id="messages">
+        {% if not messages[0] %}
+          <div class="p-3 mb-2 bg-secondary text-white">
+            <p>follow someone to see their messages on timeline</p>
+          </div>
+        {% endif %}
         {% for msg in messages %}
           <li class="list-group-item">
             <a href="/messages/{{ msg.id }}" class="message-link"/>

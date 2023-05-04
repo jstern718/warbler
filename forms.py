@@ -32,7 +32,6 @@ class UserAddForm(FlaskForm):
         validators=[Optional(), URL(), Length(max=255)]
     )
 
-    # TODO: location
 
 class UserEditForm(FlaskForm):
     """Form for updating users."""
@@ -66,7 +65,12 @@ class UserEditForm(FlaskForm):
         validators=[InputRequired(), Length(min=6, max=50)],
     )
 
-    # TODO: location
+    location = StringField(
+        '(Optional) Location',
+        validators=[Length(max=30)]
+    )
+
+
 
 
 

@@ -54,7 +54,7 @@
               Edit Profile
             </a>
             <form method="POST" action="/users/delete">
-              {{ form.hidden_tag() }}
+              {{ g.csrf_form.hidden_tag() }}
               <button class="btn btn-outline-danger ms-2">
                 Delete Profile
               </button>
@@ -63,11 +63,13 @@
             {% if g.user.is_following(user) %}
             <form method="POST"
                   action="/users/stop-following/{{ user.id }}">
+              {{ g.csrf_form.hidden_tag() }}
               <button class="btn btn-primary">Unfollow</button>
             </form>
             {% else %}
             <form method="POST" action="/users/follow/{{ user.id }}">
               <button class="btn btn-outline-primary">Follow</button>
+              {{ g.csrf_form.hidden_tag() }}
             </form>
             {% endif %}
             {% endif %}
@@ -85,8 +87,10 @@
     <h4 id="sidebar-username">@{{ user.username }}</h4>
     <p>{{user.bio}}</p>
     <p class="user-location">
-      <span class="bi bi-map"></span>
-      {{user.location}}
+      {% if user.location %}
+        <span class="bi bi-map"></span>
+        {{ user.location }}
+      {% endif %}
     </p>
   </div>
 

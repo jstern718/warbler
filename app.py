@@ -33,12 +33,22 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
-        g.csrf_form = CSRFProtectForm()
 
     else:
         g.user = None
 
-# TODO: before request set csrf form
+
+@app.before_request
+def add_csrf_to_g():
+    """If we're logged in, add csrf form to Flask global."""
+
+    if CURR_USER_KEY in session:
+        g.csrf_form = CSRFProtectForm()
+
+    else:
+        g.csrf_form = None
+        #is this necessary?
+
 
 
 def do_login(user):
@@ -144,8 +154,6 @@ def list_users():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = g.csrf_form
-
     search = request.args.get('q')
 
     if not search:
@@ -153,7 +161,7 @@ def list_users():
     else:
         users = User.query.filter(User.username.like(f"%{search}%")).all()
 
-    return render_template('users/index.html', users=users, form=form)
+    return render_template('users/index.html', users=users)
 
 
 @app.get('/users/<int:user_id>')
@@ -164,10 +172,9 @@ def show_user(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = g.csrf_form
     user = User.query.get_or_404(user_id)
 
-    return render_template('users/show.html', user=user, form=form)
+    return render_template('users/show.html', user=user)
 
 
 @app.get('/users/<int:user_id>/following')
@@ -178,9 +185,8 @@ def show_following(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = g.csrf_form
     user = User.query.get_or_404(user_id)
-    return render_template('users/following.html', user=user, form=form)
+    return render_template('users/following.html', user=user)
 
 
 @app.get('/users/<int:user_id>/followers')
@@ -191,9 +197,8 @@ def show_followers(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = g.csrf_form
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user, form=form)
+    return render_template('users/followers.html', user=user)
 
 
 @app.post('/users/follow/<int:follow_id>')
@@ -204,7 +209,7 @@ def start_following(follow_id):
     """
 
     form = g.csrf_form
-    # TODO: copy this pattern elsewhere
+
     if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -223,16 +228,15 @@ def stop_following(follow_id):
     Redirect to following page for the current for the current user.
     """
 
-    if not g.user:
+    form = g.csrf_form
+
+    if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = g.csrf_form
-    # TODO: use start_following pattern
-    if form.validate_on_submit():
-        followed_user = User.query.get_or_404(follow_id)
-        g.user.following.remove(followed_user)
-        db.session.commit()
+    followed_user = User.query.get_or_404(follow_id)
+    g.user.following.remove(followed_user)
+    db.session.commit()
 
     return redirect(f"/users/{g.user.id}/following")
 
@@ -256,11 +260,12 @@ def edit_profile():
             g.user.image_url = form.image_url.data or User.image_url.default.arg
             g.user.header_image_url = form.header_image_url.data or User.header_image_url.default.arg
             g.user.bio = form.bio.data
+            g.user.location = form.location.data
 
             db.session.commit()
             return redirect(f"/users/{g.user.id}")
 
-        flash("Invalid password.")
+        flash("Invalid password.", "danger")
 
     return render_template("users/edit.html", form=form)
 
@@ -272,19 +277,18 @@ def delete_user():
     Redirect to signup page.
     """
 
-    if not g.user:
+    form = g.csrf_form
+
+    if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = g.csrf_form
-    # TODO: use start_following pattern
-    if form.validate_on_submit():
-        do_logout()
-        Message.query.filter_by(user_id=g.user.id).delete()
-        db.session.delete(g.user)
-        db.session.commit()
+    do_logout()
+    Message.query.filter_by(user_id=g.user.id).delete()
+    db.session.delete(g.user)
+    db.session.commit()
+    flash("User succesfully deleted", "success")
 
-    # TODO: flash success
     return redirect("/signup")
 
 
@@ -322,10 +326,8 @@ def show_message(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = g.csrf_form
-
     msg = Message.query.get_or_404(message_id)
-    return render_template('messages/show.html', message=msg, form=form)
+    return render_template('messages/show.html', message=msg)
 
 
 @app.post('/messages/<int:message_id>/delete')
@@ -336,17 +338,18 @@ def delete_message(message_id):
     Redirect to user page on success.
     """
 
-    if not g.user:
+    form = g.csrf_form
+
+    if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = g.csrf_form
-    # TODO: use start_following pattern
-    if form.validate_on_submit():
-        msg = Message.query.get_or_404(message_id)
-        # TODO: check msg user author is g.user
-        db.session.delete(msg)
-        db.session.commit()
+    msg = Message.query.get_or_404(message_id)
+    if msg.owner_id != g.user.id:
+        flash("Unauthorized action.", "danger")
+        return redirect(f"/users/{g.user.id}")
+    db.session.delete(msg)
+    db.session.commit()
 
     return redirect(f"/users/{g.user.id}")
 
@@ -371,8 +374,7 @@ def homepage():
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
-        form = g.csrf_form
-        return render_template('home.html', messages=messages, form=form)
+        return render_template('home.html', messages=messages)
 
     else:
         # TODO: what forms does the home-anon need?
@@ -387,11 +389,3 @@ def add_header(response):
     response.cache_control.no_store = True
     return response
 
-
-# TODO:
-# map icon show/hide
-# password invalid message
-# facotory boy library
-# tip message: follow someone to see their emssages on timeline
-# Add CSRF tags {{form.hidden_tag()}}
-    # switch over to {{ g.csrf_form.hidden_tag() }}
