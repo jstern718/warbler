@@ -268,7 +268,7 @@ nav + .container {
   z-index: 1;
 }
 
-#messages .list-group-item a:not(.message-link) {
+#messages .list-group-item a:not(.message-link), .like-button {
   position: relative;
   z-index: 2;
 }

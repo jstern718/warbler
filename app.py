@@ -367,9 +367,9 @@ def like_message(message_id):
 
     msg = Message.query.get_or_404(message_id)
     g.user.likes.append(msg)
-    db.commit()
+    db.session.commit()
 
-    return redirect(request.url)
+    return redirect(request.referrer)
 
 
 @app.post('/messages/unlike/<int:message_id>')
@@ -385,10 +385,10 @@ def unlike_message(message_id):
         return redirect("/")
 
     msg = Message.query.get_or_404(message_id)
-    g.user.likes.pop(msg)
-    db.commit()
+    g.user.likes.remove(msg)
+    db.session.commit()
 
-    return redirect(request.url)
+    return redirect(request.referrer)
 
 
 
