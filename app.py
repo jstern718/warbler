@@ -353,6 +353,44 @@ def delete_message(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
+@app.post('/messages/like/<int:message_id>')
+def like_message(message_id):
+    """Like a message.
+
+    """
+
+    form = g.csrf_form
+
+    if not g.user or not form.validate_on_submit():
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    msg = Message.query.get_or_404(message_id)
+    g.user.likes.append(msg)
+    db.commit()
+
+    return redirect(request.url)
+
+
+@app.post('/messages/unlike/<int:message_id>')
+def unlike_message(message_id):
+    """Unlike a message.
+
+    """
+
+    form = g.csrf_form
+
+    if not g.user or not form.validate_on_submit():
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    msg = Message.query.get_or_404(message_id)
+    g.user.likes.pop(msg)
+    db.commit()
+
+    return redirect(request.url)
+
+
 
 ##############################################################################
 # Homepage and error pages
@@ -389,3 +427,4 @@ def add_header(response):
     response.cache_control.no_store = True
     return response
 
+# TODO: deal with deleting liked messages & users who have likes
