@@ -52,14 +52,12 @@ class UserBaseViewTestCase(TestCase):
         User.query.delete()
 
         u1 = User.signup("u1", "u1@email.com", "password", None)
-        db.session.flush()
-
-        m1 = User(text="m1-text", user_id=u1.id)
-        db.session.add_all([m1])
+        u2 = User.signup("u2", "u2@email.com", "password", None)
+        db.session.add_all()
         db.session.commit()
 
         self.u1_id = u1.id
-        self.m1_id = m1.id
+        self.u2_id = u2.id
 
         self.client = app.test_client()
 
@@ -80,15 +78,69 @@ class UserAddViewTestCase(UserBaseViewTestCase):
 
             User.query.filter_by(text="Hello").one()
 
-    """
-    When you’re logged in, can you see the follower / following pages for any user?
-    """
-    """
-    When you’re logged out, are you disallowed from visiting a user’s follower / following pages?
-    """
-    """
-    When you’re logged in, can you add a message as yourself?
-    """
+    def test_show_followers(self):
+        """
+        When you’re logged in, can you see the follower pages for any user?
+        """
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.get(f"/users/{self.u2_id}/followers")
+            self.assertEqual(resp.status_code, 200)
+
+    def test_show_following(self):
+        """
+        When you’re logged in, can you see the following pages for any user?
+        """
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.get(f"/users/{self.u2_id}/following")
+            self.assertEqual(resp.status_code, 200)
+
+    def test_show_followers(self):
+        """
+        When you’re logged out, are you disallowed from visiting a user’s
+        follower pages?
+        """
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+
+            resp = c.get(f"/users/{self.u2_id}/followers")
+            self.assertEqual(resp.status_code, 302)
+
+    def test_show_following(self):
+        """
+        When you’re logged out, are you disallowed from visiting a user’s
+        following pages?
+        """
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.get(f"/users/{self.u2_id}/following")
+            self.assertEqual(resp.status_code, 302)
+
+    def test_add_message(self):
+             """
+             When you’re logged in, can you add a message as yourself?
+            """
+
+            with self.client as c:
+                with c.session_transaction() as sess:
+                    sess[CURR_USER_KEY] = self.u1_id
+
+                resp = c.get(f"/users/{self.u2_id}/following")
+
+
     """
     When you’re logged in, can you delete a message as yourself?
     """

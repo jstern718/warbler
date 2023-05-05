@@ -177,7 +177,7 @@ def show_user(user_id):
     return render_template('users/show.html', user=user)
 
 
-@app.get('/users/<int:user_id>/following')
+@app.get()
 def show_following(user_id):
     """Show list of people this user is following."""
 
