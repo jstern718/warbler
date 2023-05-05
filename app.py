@@ -201,6 +201,18 @@ def show_followers(user_id):
     return render_template('users/followers.html', user=user)
 
 
+@app.get('/users/<int:user_id>/likes')
+def show_likes(user_id):
+    """Show list of likes this user liked."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    return render_template('users/likes.html', user=user)
+
+
 @app.post('/users/follow/<int:follow_id>')
 def start_following(follow_id):
     """Add a follow for the currently-logged-in user.
@@ -355,9 +367,7 @@ def delete_message(message_id):
 
 @app.post('/messages/like/<int:message_id>')
 def like_message(message_id):
-    """Like a message.
-
-    """
+    """Like a message."""
 
     form = g.csrf_form
 
@@ -366,6 +376,9 @@ def like_message(message_id):
         return redirect("/")
 
     msg = Message.query.get_or_404(message_id)
+    if msg.user == g.user:
+        flash("Unauthorized action.", "danger")
+        return redirect(request.referrer)
     g.user.likes.append(msg)
     db.session.commit()
 
@@ -374,9 +387,7 @@ def like_message(message_id):
 
 @app.post('/messages/unlike/<int:message_id>')
 def unlike_message(message_id):
-    """Unlike a message.
-
-    """
+    """Unlike a message."""
 
     form = g.csrf_form
 
