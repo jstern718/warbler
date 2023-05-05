@@ -8,7 +8,7 @@
 import os
 from unittest import TestCase
 
-from models import db, Message, User
+from models import db, Follow, User
 
 # BEFORE we import our app, let's set an environmental variable
 # to use a different database for tests (we need to do this
@@ -45,8 +45,8 @@ then do some light HTML testing to make sure the response is what you expect
 """
 
 
-class MessageBaseViewTestCase(TestCase):
-    """Set up mock data for Message tests"""
+class FollowBaseViewTestCase(TestCase):
+    """Set up mock data for Follow tests"""
 
     def setUp(self):
         User.query.delete()
@@ -54,7 +54,7 @@ class MessageBaseViewTestCase(TestCase):
         u1 = User.signup("u1", "u1@email.com", "password", None)
         db.session.flush()
 
-        m1 = Message(text="m1-text", user_id=u1.id)
+        m1 = Follow(text="m1-text", user_id=u1.id)
         db.session.add_all([m1])
         db.session.commit()
 
@@ -64,8 +64,8 @@ class MessageBaseViewTestCase(TestCase):
         self.client = app.test_client()
 
 
-class MessageAddViewTestCase(MessageBaseViewTestCase):
-    def test_add_message(self):
+class FollowAddViewTestCase(FollowBaseViewTestCase):
+    def test_add_follow(self):
         # Since we need to change the session to mimic logging in,
         # we need to use the changing-session trick:
         with self.client as c:
@@ -74,8 +74,8 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
 
             # Now, that session setting is saved, so we can have
             # the rest of ours test
-            resp = c.post("/messages/new", data={"text": "Hello"})
+            resp = c.post("/follows/new", data={"text": "Hello"})
 
             self.assertEqual(resp.status_code, 302)
 
-            Message.query.filter_by(text="Hello").one()
+            Follow.query.filter_by(text="Hello").one()

@@ -1,4 +1,4 @@
-"""Message model tests."""
+"""Like model tests."""
 
 # run these tests like:
 #
@@ -8,7 +8,7 @@
 import os
 from unittest import TestCase
 
-from models import db, Message
+from models import db, Like
 
 # BEFORE we import our app, let's set an environmental variable
 # to use a different database for tests (we need to do this
@@ -27,24 +27,25 @@ from app import app
 
 db.drop_all()
 db.create_all()
+# TODO: in the future, only create the tables necessary for this test suite
 
 
-class MessageModelTestCase(TestCase):
+class LikeModelTestCase(TestCase):
     def setUp(self):
-        Message.query.delete()
+        Like.query.delete()
 
-        m1 = Message.signup("m1", "m1@email.com", "password", None)
-        m2 = Message.signup("m2", "m2@email.com", "password", None)
+        l1 = Like.signup("l1", "l1@email.com", "password", None)
+        l2 = Like.signup("l2", "l2@email.com", "password", None)
 
         db.session.commit()
-        self.m1_id = m1.id
-        self.m2_id = m2.id
+        self.l1_id = l1.id
+        self.l2_id = l2.id
 
         self.client = app.test_client()
 
     def tearDown(self):
         db.session.rollback()
 
-    def test_message_model(self):
+    def test_like_model(self):
         """Verify that models have the attributes you expect"""
         """write tests for any model methods"""

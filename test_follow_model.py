@@ -1,4 +1,4 @@
-"""Message model tests."""
+"""Follow model tests."""
 
 # run these tests like:
 #
@@ -8,7 +8,7 @@
 import os
 from unittest import TestCase
 
-from models import db, Message
+from models import db, Follow
 
 # BEFORE we import our app, let's set an environmental variable
 # to use a different database for tests (we need to do this
@@ -29,22 +29,22 @@ db.drop_all()
 db.create_all()
 
 
-class MessageModelTestCase(TestCase):
+class FollowModelTestCase(TestCase):
     def setUp(self):
-        Message.query.delete()
+        Follow.query.delete()
 
-        m1 = Message.signup("m1", "m1@email.com", "password", None)
-        m2 = Message.signup("m2", "m2@email.com", "password", None)
+        f1 = Follow.signup("f1", "f1@email.com", "password", None)
+        f2 = Follow.signup("f2", "f2@email.com", "password", None)
 
         db.session.commit()
-        self.m1_id = m1.id
-        self.m2_id = m2.id
+        self.f1_id = f1.id
+        self.f2_id = f2.id
 
         self.client = app.test_client()
 
     def tearDown(self):
         db.session.rollback()
 
-    def test_message_model(self):
+    def test_follow_model(self):
         """Verify that models have the attributes you expect"""
         """write tests for any model methods"""

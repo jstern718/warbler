@@ -46,8 +46,33 @@ class UserModelTestCase(TestCase):
         db.session.rollback()
 
     def test_user_model(self):
+        """Verify that models have the attributes you expect"""
         u1 = User.query.get(self.u1_id)
 
         # User should have no messages & no followers
         self.assertEqual(len(u1.messages), 0)
         self.assertEqual(len(u1.followers), 0)
+
+
+    """write tests for any model methods"""
+
+    def test_user_is_following(self):
+        """Does is_following successfully detect when user1 is following user2?"""
+        """Does is_following successfully detect when user1 is not following user2?"""
+        pass
+
+    def test_user_is_followed_by(self):
+        """Does is_followed_by successfully detect when user1 is followed by user2?"""
+        """Does is_followed_by successfully detect when user1 is not followed by user2?"""
+        pass
+
+    def test_user_signup(self):
+        """Does User.signup successfully create a new user given valid credentials?"""
+        """Does User.signup fail to create a new user if any of the validations (eg uniqueness, non-nullable fields) fail?"""
+        pass
+
+    def test_user_authenticate(self):
+        """Does User.authenticate successfully return a user when given a valid username and password?"""
+        """Does User.authenticate fail to return a user when the username is invalid?"""
+        """Does User.authenticate fail to return a user when the password is invalid?"""
+        pass
