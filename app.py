@@ -177,7 +177,7 @@ def show_user(user_id):
     return render_template('users/show.html', user=user)
 
 
-@app.get()
+@app.get('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""
 
@@ -357,7 +357,7 @@ def delete_message(message_id):
         return redirect("/")
 
     msg = Message.query.get_or_404(message_id)
-    if msg.owner_id != g.user.id:
+    if msg.user_id != g.user.id:
         flash("Unauthorized action.", "danger")
         return redirect(f"/users/{g.user.id}")
     db.session.delete(msg)
