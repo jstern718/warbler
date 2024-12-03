@@ -20,10 +20,14 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
 
+
 try:
     connect_db(app)
+    with app.app_context():
+        db.create_all()
+        print("All tables created successfully.")
 except Exception as e:
-    print(e, "failed connect db")
+    print(e, "failed to connect db or create tables")
 
 
 ##############################################################################
