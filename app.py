@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from forms import UserAddForm, UserEditForm, LoginForm, MessageForm, CSRFProtectForm
 from models import db, connect_db, User, Message
@@ -93,8 +93,15 @@ def signup():
             )
             db.session.commit()
 
-        except IntegrityError:
-            flash("Username already taken", 'danger')
+        except IntegrityError as e:
+            db.session.rollback()
+            flash("Username or email already taken", 'danger')
+            print(f"IntegrityError: {e.orig}")
+            return render_template('users/signup.html', form=form)
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            flash("An error occurred while creating your account. Please try again.", 'danger')
+            print(f"SQLAlchemyError: {e}")
             return render_template('users/signup.html', form=form)
 
         do_login(user)
