@@ -20,12 +20,10 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
 
-try{
+try:
     connect_db(app)
-}
-except Exception as e:{
+except Exception as e:
     print(e, "failed connect db")
-}
 
 
 ##############################################################################
