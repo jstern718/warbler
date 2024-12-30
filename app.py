@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError, create_engine
 
 from forms import UserAddForm, UserEditForm, LoginForm, MessageForm, CSRFProtectForm
 from models import db, connect_db, User, Message
@@ -20,6 +20,7 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
 
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 
 try:
     connect_db(app)

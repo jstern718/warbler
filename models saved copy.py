@@ -4,16 +4,6 @@ from datetime import datetime
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-
-from app import engine
-
-# Define the base class for table models
-Base = declarative_base()
-
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
@@ -27,78 +17,78 @@ DEFAULT_HEADER_IMAGE_URL = (
     "mat&fit=crop&w=2070&q=80")
 
 
-class Follow(Base):
+class Follow(db.Model):
     """Connection of a follower <-> followed_user."""
 
     __tablename__ = 'follows'
 
-    user_being_followed_id = Column(
-        Integer,
-        ForeignKey('users.id', ondelete="cascade"),
+    user_being_followed_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
         primary_key=True,
     )
 
-    user_following_id = Column(
-        Integer,
-        ForeignKey('users.id', ondelete="cascade"),
+    user_following_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
         primary_key=True,
     )
 
 
-class User(Base):
+class User(db.Model):
     """User in the system."""
 
     __tablename__ = 'users'
 
-    id = Column(
-        Integer,
+    id = db.Column(
+        db.Integer,
         primary_key=True,
     )
 
-    email = Column(
-        String(50),
+    email = db.Column(
+        db.String(50),
         nullable=False,
         unique=True,
     )
 
-    username = Column(
-        String(30),
+    username = db.Column(
+        db.String(30),
         nullable=False,
         unique=True,
     )
 
-    image_url = Column(
-        String(255),
+    image_url = db.Column(
+        db.String(255),
         nullable=False,
         default=DEFAULT_IMAGE_URL,
     )
 
-    header_image_url = Column(
-        String(255),
+    header_image_url = db.Column(
+        db.String(255),
         nullable=False,
         default=DEFAULT_HEADER_IMAGE_URL,
     )
 
-    bio = Column(
-        String,
+    bio = db.Column(
+        db.Text,
         nullable=False,
         default="",
     )
 
-    location = Column(
-        String(30),
+    location = db.Column(
+        db.String(30),
         nullable=False,
         default="",
     )
 
-    password = Column(
-        String(100),
+    password = db.Column(
+        db.String(100),
         nullable=False,
     )
 
-    messages = relationship('Message', backref="user")
+    messages = db.relationship('Message', backref="user")
 
-    followers = relationship(
+    followers = db.relationship(
         "User",
         secondary="follows",
         primaryjoin=(Follow.user_being_followed_id == id),
@@ -106,7 +96,7 @@ class User(Base):
         backref="following",
     )
 
-    likes = relationship(
+    likes = db.relationship(
         "Message",
         secondary="likes",
         backref="likers"
@@ -132,11 +122,8 @@ class User(Base):
         )
 
         # TODO: validate user instance before adding
-        Session = sessionmaker(bind=engine)
-        session = Session()
-        session.add(user)
-        session.commit()
-        session.add(user)
+
+        db.session.add(user)
         return user
 
     @classmethod
@@ -175,47 +162,47 @@ class User(Base):
         return len(found_user_list) == 1
 
 
-class Message(Base):
+class Message(db.Model):
     """An individual message ("warble")."""
 
     __tablename__ = 'messages'
 
-    id = Column(
-        Integer,
+    id = db.Column(
+        db.Integer,
         primary_key=True,
     )
 
-    text = Column(
-        String(140),
+    text = db.Column(
+        db.String(140),
         nullable=False,
     )
 
-    timestamp = Column(
-        DateTime,
+    timestamp = db.Column(
+        db.DateTime,
         nullable=False,
         default=datetime.utcnow,
     )
 
-    user_id = Column(
-        Integer,
-        ForeignKey('users.id', ondelete='CASCADE'),
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
         nullable=False,
     )
 
 
-class Like(Base):
+class Like(db.Model):
 
     __tablename__ = "likes"
 
-    message_id = Column(
-        Integer,
-        ForeignKey('messages.id', ondelete="cascade"),
+    message_id = db.Column(
+        db.Integer,
+        db.ForeignKey('messages.id', ondelete="cascade"),
         primary_key=True,
     )
 
-    user_id = Column(
-        Integer,
-        ForeignKey('users.id', ondelete="cascade"),
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
         primary_key=True,
     )
 
@@ -227,10 +214,5 @@ def connect_db(app):
     """
 
     app.app_context().push()
-    app = app
-    init_app(app)
-
-
-# Create all tables in the database
-Base.metadata.create_all(engine)
-print("Tables created successfully")
+    db.app = app
+    db.init_app(app)
