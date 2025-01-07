@@ -4,7 +4,7 @@
 
     <aside class="col-md-4 col-lg-3 col-sm-12" id="home-aside">
       <div class="card user-card">
-        <div>
+        <div class="side-of-image">
           <div class="image-wrapper">
             <img src="{{ g.user.header_image_url }}" alt="" class="card-hero">
           </div>
@@ -12,7 +12,7 @@
             <img src="{{ g.user.image_url }}"
                  alt="Image for {{ g.user.username }}"
                  class="card-image">
-            <p>@{{ g.user.username }}</p>
+            <p class="at-name">@{{ g.user.username }}</p>
           </a>
           <ul class="user-stats nav nav-pills">
             <li class="stat">
@@ -58,9 +58,9 @@
                 <img src="{{ msg.user.image_url }}" alt="" class="timeline-image">
               </a>
               <div class="message-area">
-                <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
-                <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
-                <p>{{ msg.text }}</p>
+                <a class="at-name" href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
+                <span class="text-muted muted-box">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
+                <p class="msg-text">{{ msg.text }}</p>
                 {% if msg.user_id != g.user.id %}
                   {% if msg in g.user.likes %}
                   <form action="/messages/unlike/{{ msg.id }}" method="POST" class="d-inline">

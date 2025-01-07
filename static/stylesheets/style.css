@@ -1,7 +1,8 @@
 /* ====================== General */
 
 body {
-  background-color: #e6ecf0;
+  /* background-color: #e6ecf0; */
+  background-color: white;
 }
 
 body.error-404 {
@@ -23,7 +24,7 @@ body.error-404 {
 /* ======================= Nav */
 
 .navbar {
-  background-color: #fff;
+  background-color: #ffccaa;
   height: 46px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.25);
   margin-bottom: 1rem;
@@ -185,6 +186,9 @@ nav + .container {
   height: 48px;
   width: 48px;
   margin-top: 2px;
+  margin-right: 3px;
+  border: .5px solid gray;
+  box-shadow: 1px 1px 1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .message-area,
@@ -241,12 +245,19 @@ nav + .container {
   line-height: 1;
 }
 
+.small{
+    margin-left: 5px;
+    margin-right:5px;
+
+}
+
 .stat > .small {
   color: #657786;
   font-weight: bold;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.02em;
   margin-bottom: 0;
+
 }
 
 .stat > .small + h4 {
@@ -266,6 +277,7 @@ nav + .container {
   left: 0;
   right: 0;
   z-index: 1;
+
 }
 
 #messages .list-group-item a:not(.message-link), .like-button {
@@ -276,7 +288,11 @@ nav + .container {
 #messages .list-group-item {
   display: flex;
   align-items: flex-start;
-  padding: 7px 20px 12px;
+  padding: 12px 20px 12px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.15);
 }
 
 #messages:not(.no-hover) .list-group-item:hover {
@@ -306,16 +322,18 @@ nav + .container {
 .user-card {
   width: 100%;
   padding-bottom: 100%;
-  border-radius: 5px;
+  border-radius: 12px;
   border: 1px solid #ccc;
   position: relative;
-  background: white;
+  background-color: whitesmoke;
   margin-top: 20px;
+  box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.15);
 }
 
 .user-card > div {
   position: absolute;
   background: white;
+
 }
 
 .user-card form {
@@ -350,11 +368,19 @@ nav + .container {
 
 .card-link {
   display: inline-block;
-  margin-left: 10px;
+  padding-left: 10px;
+  background-color: whitesmoke;
+
+
 }
 
 .card-link > p {
   position: absolute;
+
+}
+
+.side-of-image{
+
 }
 
 .user-cards {
@@ -386,23 +412,26 @@ p.card-bio {
 /* ============================ Signed out home */
 
 .home-hero {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-  position: absolute;
-  top: 0;
-  width: 100vw;
-  left: 0;
-  z-index: -1;
-  background-image: url("/static/images/signed-out-home.jpg");
-  background-size: cover;
-  background-position: center center;
-  color: #fff;
-  text-align: center;
-  padding: 1rem;
-  text-shadow: 0 0 8px #66757f;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    width: 75vw;
+    height: 70vh;
+    z-index: -1;
+    background-image: url("/static/images/signed-out-home.jpg");
+    background-size: cover;
+    background-position: center center;
+    color: #fff;
+    border: 2px solid white;
+    box-shadow: 8px 8px 8px 0 rgba(0, 0, 0, 0.2);
+    text-align: center;
+    padding: 1rem;
+    text-shadow: 0 0 8px #66757f;
+    top: 50%;
+    left: 12.5%;
+    transform: translateY(-50%);
 }
 
 .home-hero .btn {
@@ -435,32 +464,43 @@ p.card-bio {
 
 #home-aside > .user-card .card-link {
   display: flex;
+
 }
 
 #home-aside > .user-card .card-link > p {
   margin-left: 0.5rem;
   margin-top: 0.25rem;
+
+
 }
 
 #home-aside > .user-card .stat {
   padding: 14px 0 7px;
+  background-color: white;
+  box-shadow: 1px 0 5px 1px rgba(128, 128, 128, .2) inset;
 }
 
 #home-aside > .user-card .user-stats {
   display: flex;
   justify-content: space-around;
+  background-color: whitesmoke;
 }
 
 #home-aside > .user-card > div {
   width: 100%;
+
+
 }
 
 #home-aside .card-link > p {
   position: relative;
+
+
 }
 
 #home-aside .stat h4 {
-  text-align: left;
+  text-align: center;
+
 }
 
 /* ========================== Signup/Login */
@@ -495,6 +535,33 @@ p.card-bio {
 
 #messages.no-hover .message-area {
   width: 100%;
+}
+
+a {
+    color: #1da1f2;
+    text-decoration:none;
+  }
+
+.at-name{
+    background-color: white;
+    box-shadow: 1px 1px 1px 1px rgba(128, 128, 128, .4);
+    padding: 5px;
+}
+
+.text-muted {
+    padding: 5px;
+}
+
+.muted-box{
+    box-shadow: 1px 1px 1px 1px rgba(128, 128, 128, .2);
+}
+
+.msg-text{
+
+    border-left: 2px solid #ccc;
+    margin-top: 10px;
+    padding-left: 10px;
+
 }
 
 #messages.no-hover .message-heading {
